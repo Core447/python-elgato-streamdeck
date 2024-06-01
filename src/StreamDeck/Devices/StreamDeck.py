@@ -82,6 +82,8 @@ class StreamDeck(ABC):
         self.dial_callback = None
         self.touchscreen_callback = None
 
+        self.reconnect_after_suspend: bool = None
+
         self.update_lock = threading.RLock()
 
     def __del__(self):
@@ -181,6 +183,11 @@ class StreamDeck(ABC):
                 self.run_read_thread = False
                 self.close()
 
+                if self.reconnect_after_suspend:
+                    if self.connected() and not self.is_open():
+                        # This is the case when resuming from suspend
+                        self.open()
+
     def _setup_reader(self, callback):
         """
         Sets up the internal transport reader thread with the given callback,
@@ -224,13 +231,14 @@ class StreamDeck(ABC):
         """
         self.device.close()
 
-    def is_open(self):
+    def is_open(self, reconnect_after_suspend: bool = True):
         """
         Indicates if the StreamDeck device is currently open and ready for use.
 
         :rtype: bool
         :return: `True` if the deck is open, `False` otherwise.
         """
+        self.reconnect_after_suspend = reconnect_after_suspend
         return self.device.is_open()
 
     def connected(self):

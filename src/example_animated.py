@@ -124,14 +124,17 @@ if __name__ == "__main__":
 
             # Periodic loop that will render every frame at the set FPS until
             # the StreamDeck device we're using is closed.
-            while deck.is_open():
+            while deck.connected():
                 try:
                     # Use a scoped-with on the deck to ensure we're the only
                     # thread using it right now.
                     with deck:
                         # Update the key images with the next animation frame.
                         for key, frames in key_images.items():
-                            deck.set_key_image(key, next(frames))
+                            try:
+                                deck.set_key_image(key, next(frames))
+                            except TransportError:
+                                pass
                 except TransportError as err:
                     print("TransportError: {0}".format(err))
                     # Something went wrong while communicating with the device
