@@ -186,7 +186,15 @@ class StreamDeck(ABC):
                 if self.reconnect_after_suspend:
                     if self.connected() and not self.is_open():
                         # This is the case when resuming from suspend
-                        self.open()
+                        for i in range(20):
+                            try:
+                                self.open()
+                                break
+                            except TransportError:
+                                time.sleep(0.1)
+
+                            if not self.connected():
+                                break
 
     def _setup_reader(self, callback):
         """
