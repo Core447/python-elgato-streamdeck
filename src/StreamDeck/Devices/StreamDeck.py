@@ -211,13 +211,14 @@ class StreamDeck(ABC):
             self.read_thread.daemon = True
             self.read_thread.start()
 
-    def open(self):
+    def open(self, reconnect_after_suspend: bool = True):
         """
         Opens the device for input/output. This must be called prior to setting
         or retrieving any device state.
 
         .. seealso:: See :func:`~StreamDeck.close` for the corresponding close method.
         """
+        self.reconnect_after_suspend = reconnect_after_suspend
         self.device.open()
 
         self._reset_key_stream()
@@ -231,14 +232,13 @@ class StreamDeck(ABC):
         """
         self.device.close()
 
-    def is_open(self, reconnect_after_suspend: bool = True):
+    def is_open(self):
         """
         Indicates if the StreamDeck device is currently open and ready for use.
 
         :rtype: bool
         :return: `True` if the deck is open, `False` otherwise.
         """
-        self.reconnect_after_suspend = reconnect_after_suspend
         return self.device.is_open()
 
     def connected(self):
